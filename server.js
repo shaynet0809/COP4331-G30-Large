@@ -29,6 +29,57 @@ app.get('*', (req, res) =>
 });
 }
 
+app.post('/api/login', async (req, res, next) => {
+    var error = '';
+
+    //const { login, password } = req.body;
+    const { username, password } = req.body;
+
+    const db = client.db();
+    //const results = await db.collection('users').find({Login:login,Password:password}).toArray();
+    const results = await db.collection('users').find({Username:username,Password:password}).toArray();
+
+    //var id = -1;
+    var id = "";
+    var fn = '';
+    var ln = '';
+
+    if( results.length > 0 )
+    {
+        //id = results[0].UserID.str;
+        id = results[0]._id.toString();
+        fn = results[0].FirstName;
+        ln = results[0].LastName;
+        em = results[0].email;
+        ph = results[0].phone;
+    }
+
+    var ret = { id:id, firstName:fn, lastName:ln, error:''};
+    res.status(200).json(ret);
+});
+
+// register endpoint
+app.post('/api/register', async (req, res, next) => {
+    const { firstName, lastName, username, phone, email, password } = req.body;
+
+    //const newUser = {FirstName: first, LastName: last, Username: username, Phone: phone, Email: email, Password: password};
+    const newUser = {FirstName: firstName, LastName: lastName, Username: username, Phone: phone, Email: email, Password: password};
+    var error = '';
+
+    try
+    {
+        const db = client.db();
+        const result = db.collection('users').insertOne(newUser);
+    }
+    catch(e)
+    {
+        error = e.toString();
+    }
+
+    var ret = { error: error };
+    res.status(200).json(ret);
+});
+
 app.use((req, res, next) => 
 {
   res.setHeader('Access-Control-Allow-Origin', '*');
